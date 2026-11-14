@@ -4,7 +4,7 @@ SmartCampus AI is an enterprise-grade higher-education intelligence platform com
 
 ---
 
-## 🌟 Key Features
+## Key Features
 
 1. **Facial Biometric Attendance**:
    - Zero-dependency vector feature extractor with cosine similarity thresholding ($D_{cos} \ge 0.70$).
@@ -21,7 +21,7 @@ SmartCampus AI is an enterprise-grade higher-education intelligence platform com
 
 ---
 
-## 🛠️ Tech Stack
+## ️ Tech Stack
 
 - **Backend**: Python 3.11 + FastAPI + Pydantic v2 + SQLAlchemy 2.0
 - **AI/ML Engine**: NumPy spatial feature extraction + Logistic Regression Classifier
@@ -32,7 +32,7 @@ SmartCampus AI is an enterprise-grade higher-education intelligence platform com
 
 ---
 
-## 🚀 Quickstart Guide
+## Quickstart Guide
 
 ### 1. Local Setup
 ```bash
@@ -58,7 +58,7 @@ docker-compose up --build
 
 ---
 
-## 📊 Model Evaluation & Metrics
+## Model Evaluation & Metrics
 - **Risk Classifier Precision**: 91.2%
 - **Risk Classifier Recall**: 89.4%
 - **Face Cosine Distance Separation**: Inter-class margin $\Delta = 0.38$
@@ -66,6 +66,6 @@ docker-compose up --build
 
 ---
 
-## 👤 Author
+## Author
 **Prachi Zala**  
 BCA Student & Software Developer | [GitHub](https://github.com/prachizala)
