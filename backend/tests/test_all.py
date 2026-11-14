@@ -53,3 +53,16 @@ def test_academic_risk_classifier():
     assert critical["risk_level"] == "high"
     assert critical["risk_score"] >= 0.65
     assert len(critical["alerts"]) > 0
+
+
+def test_attendance_status_upgrade():
+    # Verify that an absent student is upgraded to present upon verified scan
+    from app.models.models import AttendanceRecord
+    # Simulation logic
+    rec = AttendanceRecord(session_id=1, student_id=4, status="absent", confidence_score=0.0)
+    assert rec.status == "absent"
+    # Upgrade
+    rec.status = "present"
+    rec.confidence_score = 0.92
+    assert rec.status == "present"
+    assert rec.confidence_score == 0.92

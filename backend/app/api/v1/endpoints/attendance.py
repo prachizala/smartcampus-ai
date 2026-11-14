@@ -22,11 +22,6 @@ class FaceVerifyRequest(BaseModel):
     session_id: int
     image_base64: str
 
-class ManualAttendanceRequest(BaseModel):
-    session_id: int
-    student_id: int
-    status: str
-
 @router.post("/sessions")
 def create_session(
     req: CreateSessionRequest,
@@ -35,7 +30,7 @@ def create_session(
 ):
     course = db.query(Course).filter(Course.course_code == req.course_code).first()
     if not course:
-        raise HTTPException(status_code=404, detail="Course not found")
+        raise HTTPException(status_code=404, detail=f"Course with code '{req.course_code}' not found")
 
     new_session = ClassSession(
         course_id=course.id,
@@ -58,7 +53,7 @@ def list_sessions(db: Session = Depends(get_db), current_user: User = Depends(ge
             "course_name": s.course.course_name if s.course else "General Lecture",
             "session_date": s.session_date,
             "topic": s.topic,
-            "attendance_count": len(s.attendance_records)
+            "attendance_count": len(s.attendance_records) if s.attendance_records else 0
         })
     return out
 
@@ -78,7 +73,6 @@ def verify_face_attendance(
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid image data: {str(e)}")
 
-    # Retrieve all enrolled students with face embeddings
     students = db.query(User).filter(User.role == "student", User.face_embedding.isnot(None)).all()
     gallery = []
     for s in students:
@@ -103,13 +97,29 @@ def verify_face_attendance(
 
     matched_user_id = match["student_id"]
 
-    # Check for duplicate in current session
+    # Check for existing record in this session
     existing = db.query(AttendanceRecord).filter(
         AttendanceRecord.session_id == req.session_id,
         AttendanceRecord.student_id == matched_user_id
     ).first()
 
     if existing:
+        # If previously marked absent, upgrade to present!
+        if existing.status == "absent":
+            existing.status = "present"
+            existing.confidence_score = confidence
+            existing.marked_at = datetime.utcnow()
+            db.commit()
+            return {
+                "matched": True,
+                "already_marked": False,
+                "upgraded_from_absent": True,
+                "student_name": match["full_name"],
+                "roll_number": match["roll_number"],
+                "confidence": confidence,
+                "status": "present",
+                "message": f"Status updated from Absent to Present for {match['full_name']}."
+            }
         return {
             "matched": True,
             "already_marked": True,
@@ -117,10 +127,9 @@ def verify_face_attendance(
             "roll_number": match["roll_number"],
             "confidence": confidence,
             "status": existing.status,
-            "message": f"Attendance already recorded for {match['full_name']} in this session."
+            "message": f"Attendance already recorded as {existing.status.upper()} for {match['full_name']}."
         }
 
-    # Record attendance
     new_record = AttendanceRecord(
         session_id=req.session_id,
         student_id=matched_user_id,
@@ -152,11 +161,12 @@ def export_attendance_csv(session_id: Optional[int] = None, db: Session = Depend
     records = query.all()
 
     for r in records:
-        s_name = r.student.full_name if r.student else "Unknown"
-        s_roll = r.student.student_id if r.student else "N/A"
-        c_code = r.session.course.course_code if r.session and r.session.course else "GEN101"
-        s_date = r.session.session_date if r.session else ""
-        writer.writerow([r.id, r.session_id, c_code, s_date, s_name, s_roll, r.status, f"{r.confidence_score*100:.1f}%", r.marked_at])
+        s_name = r.student.full_name if (r.student and r.student.full_name) else "Unknown"
+        s_roll = r.student.student_id if (r.student and r.student.student_id) else "N/A"
+        c_code = r.session.course.course_code if (r.session and r.session.course and r.session.course.course_code) else "GEN101"
+        s_date = r.session.session_date if (r.session and r.session.session_date) else "Unknown"
+        conf = f"{r.confidence_score*100:.1f}%" if r.confidence_score is not None else "100.0%"
+        writer.writerow([r.id, r.session_id, c_code, s_date, s_name, s_roll, r.status, conf, r.marked_at])
 
     output.seek(0)
     return Response(
