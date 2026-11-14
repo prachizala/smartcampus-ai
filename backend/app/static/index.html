@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartCampus AI - Attendance & Risk Intelligence</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background-color: #0f172a; color: #f8fafc; font-family: system-ui, -apple-system, sans-serif; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- Top Navigation -->
+  <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex items-center justify-between">
+    <div class="flex items-center space-x-3">
+      <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-indigo-500/20">
+        <i class="fa-solid fa-graduation-cap"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-lg leading-tight tracking-tight">SmartCampus AI</h1>
+        <p class="text-xs text-slate-400">Biometric Attendance & Academic Risk Predictor</p>
+      </div>
+    </div>
+    <div class="flex items-center space-x-4">
+      <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span> FastAPI v0.9.0 Connected
+      </span>
+      <div class="flex items-center space-x-2 text-sm text-slate-300">
+        <i class="fa-solid fa-user-tie text-indigo-400"></i>
+        <span>Prof. Sunita Sharma (Faculty)</span>
+      </div>
+      <a href="/docs" target="_blank" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition">
+        <i class="fa-solid fa-book-open mr-1"></i> API Docs
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 p-6 max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- Left Column: Attendance Scanner & Controls (5 Cols) -->
+    <div class="lg:col-span-5 space-y-6">
+      <!-- Session Selector Card -->
+      <div class="bg-slate-900/80 rounded-2xl border border-slate-800 p-5 shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400">Class Session</h2>
+          <span class="text-xs text-indigo-400 font-mono">BCA301 - Lab 3</span>
+        </div>
+        <div class="space-y-3">
+          <label class="block text-xs font-medium text-slate-300">Active Course Topic</label>
+          <div class="p-3 bg-slate-800/80 rounded-xl border border-slate-700/60 flex items-center justify-between">
+            <div>
+              <p class="font-semibold text-sm text-white" id="sessionTopic">Binary Search Trees</p>
+              <p class="text-xs text-slate-400" id="sessionDate">Today • 10:00 AM - 11:30 AM</p>
+            </div>
+            <button onclick="fetchSessions()" class="text-xs text-indigo-400 hover:text-indigo-300">
+              <i class="fa-solid fa-rotate"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Biometric Webcam Scanner Card -->
+      <div class="bg-slate-900/80 rounded-2xl border border-slate-800 p-5 shadow-xl">
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400">Face Recognition Scanner</h2>
+          <span class="text-xs text-emerald-400 font-mono">Cosine Sim: 0.70</span>
+        </div>
+
+        <!-- Simulated Camera Viewport -->
+        <div class="relative aspect-video bg-slate-950 rounded-xl overflow-hidden border border-slate-800 flex flex-col items-center justify-center p-4">
+          <div id="cameraViewport" class="text-center space-y-2">
+            <div class="w-16 h-16 mx-auto rounded-full border-2 border-dashed border-indigo-400/50 flex items-center justify-center text-indigo-400 text-2xl animate-pulse">
+              <i class="fa-solid fa-camera"></i>
+            </div>
+            <p class="text-xs text-slate-400">Position student face in frame</p>
+          </div>
+          <div id="scanResultOverlay" class="hidden absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center p-4 text-center">
+            <div id="scanIcon" class="w-12 h-12 rounded-full flex items-center justify-center text-xl mb-2"></div>
+            <h3 id="scanName" class="font-bold text-white text-base"></h3>
+            <p id="scanDetails" class="text-xs text-slate-400 mb-3"></p>
+            <button onclick="resetScanner()" class="px-3 py-1 bg-slate-800 hover:bg-slate-700 text-xs rounded-lg text-slate-300">Next Scan</button>
+          </div>
+        </div>
+
+        <!-- Scan Action Trigger -->
+        <div class="mt-4 grid grid-cols-2 gap-3">
+          <button onclick="simulateScan('Prachi Zala')" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/30">
+            <i class="fa-solid fa-id-card"></i>
+            <span>Scan Prachi Zala</span>
+          </button>
+          <button onclick="simulateScan('Kabir Mehta')" class="w-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium py-2.5 px-3 rounded-xl text-xs transition flex items-center justify-center space-x-2 border border-slate-700">
+            <i class="fa-solid fa-id-card"></i>
+            <span>Scan Kabir Mehta</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Export Card -->
+      <div class="bg-slate-900/80 rounded-2xl border border-slate-800 p-5 flex items-center justify-between">
+        <div>
+          <h3 class="font-semibold text-sm">Attendance Ledger</h3>
+          <p class="text-xs text-slate-400">Export verified records to standard CSV</p>
+        </div>
+        <a href="/api/v1/attendance/export/csv" target="_blank" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl transition shadow-lg shadow-emerald-600/20 flex items-center space-x-2">
+          <i class="fa-solid fa-file-csv"></i>
+          <span>Download CSV</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Right Column: Analytics & At-Risk Early Warning (7 Cols) -->
+    <div class="lg:col-span-7 space-y-6">
+      <!-- KPI Row -->
+      <div class="grid grid-cols-3 gap-4">
+        <div class="bg-slate-900/80 rounded-2xl border border-slate-800 p-4">
+          <p class="text-xs text-slate-400 font-medium">Cohort Attendance</p>
+          <p class="text-2xl font-bold text-white mt-1">82.4%</p>
+          <span class="text-xs text-emerald-400 flex items-center mt-1">
+            <i class="fa-solid fa-arrow-trend-up mr-1"></i> Above 75% target
+          </span>
+        </div>
+        <div class="bg-slate-900/80 rounded-2xl border border-slate-800 p-4">
+          <p class="text-xs text-slate-400 font-medium">High Risk Students</p>
+          <p class="text-2xl font-bold text-rose-400 mt-1" id="highRiskCount">2</p>
+          <span class="text-xs text-rose-400/80 flex items-center mt-1">
+            <i class="fa-solid fa-triangle-exclamation mr-1"></i> Immediate action
+          </span>
+        </div>
+        <div class="bg-slate-900/80 rounded-2xl border border-slate-800 p-4">
+          <p class="text-xs text-slate-400 font-medium">Verified Today</p>
+          <p class="text-2xl font-bold text-indigo-400 mt-1" id="verifiedCount">7 / 8</p>
+          <span class="text-xs text-slate-400 flex items-center mt-1">
+            <i class="fa-solid fa-check-double mr-1"></i> Biometric confirmed
+          </span>
+        </div>
+      </div>
+
+      <!-- Academic Risk Early Warning Table -->
+      <div class="bg-slate-900/80 rounded-2xl border border-slate-800 p-5 shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400">Scikit-Learn Risk Predictor</h2>
+            <p class="text-xs text-slate-500">Evaluates attendance, midterms, assignments & backlogs</p>
+          </div>
+          <span class="text-xs px-2.5 py-1 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-medium">
+            Threshold: 75.0%
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-800/60 uppercase font-semibold text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="py-2.5 px-3">Student</th>
+                <th class="py-2.5 px-3">Attendance</th>
+                <th class="py-2.5 px-3">Midterm</th>
+                <th class="py-2.5 px-3">Backlogs</th>
+                <th class="py-2.5 px-3">Risk Level</th>
+                <th class="py-2.5 px-3 text-right">Intervention</th>
+              </tr>
+            </thead>
+            <tbody id="riskTableBody" class="divide-y divide-slate-800/60 font-mono">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    async function loadRiskData() {
+      try {
+        const res = await fetch('/api/v1/analytics/risk-summary');
+        const data = await res.json();
+        const tbody = document.getElementById('riskTableBody');
+        tbody.innerHTML = '';
+
+        const students = [...data.high_risk_students, ...data.medium_risk_students];
+        document.getElementById('highRiskCount').innerText = data.high_risk_count;
+
+        students.forEach(s => {
+          const isHigh = s.risk_level === 'high';
+          const badgeClass = isHigh ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+          const row = `
+            <tr class="hover:bg-slate-800/30 transition">
+              <td class="py-3 px-3 font-sans font-medium text-white">${s.full_name} <span class="text-slate-500 text-xs">(${s.roll_number})</span></td>
+              <td class="py-3 px-3 ${s.attendance_rate < 75 ? 'text-rose-400 font-bold' : 'text-slate-300'}">${s.attendance_rate}%</td>
+              <td class="py-3 px-3">${s.midterm_score}%</td>
+              <td class="py-3 px-3 text-center">${s.backlogs}</td>
+              <td class="py-3 px-3">
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold border ${badgeClass}">
+                  ${s.risk_level.toUpperCase()}
+                </span>
+              </td>
+              <td class="py-3 px-3 text-right">
+                <button onclick="alert('Intervention Notice Generated for ' + '${s.full_name}')" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-[10px] transition">
+                  Mentoring Slip
+                </button>
+              </td>
+            </tr>
+          `;
+          tbody.innerHTML += row;
+        });
+      } catch (err) {
+        console.error("Error loading risk data", err);
+      }
+    }
+
+    async function simulateScan(studentName) {
+      const overlay = document.getElementById('scanResultOverlay');
+      const icon = document.getElementById('scanIcon');
+      const name = document.getElementById('scanName');
+      const details = document.getElementById('scanDetails');
+
+      overlay.classList.remove('hidden');
+      icon.className = 'w-12 h-12 rounded-full flex items-center justify-center text-xl mb-2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      icon.innerHTML = '<i class="fa-solid fa-check"></i>';
+      name.innerText = studentName;
+      details.innerText = 'Confidence: 94.6% • Present Marked in BCA301';
+    }
+
+    function resetScanner() {
+      document.getElementById('scanResultOverlay').classList.add('hidden');
+    }
+
+    loadRiskData();
+  </script>
+</body>
+</html>
