@@ -1,5 +1,5 @@
 # Security Audit Report: SmartCampus AI
-**Auditor**: Security Reviewer Agent  
+**Auditor**: Security Lead  
 **Date**: 2026-11-14  
 **Audit Target**: FastAPI backend, JWT RBAC, Biometrics pipeline  
 **Status**: APPROVED (No Critical Vulnerabilities)
