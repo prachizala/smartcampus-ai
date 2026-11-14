@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  smartcampus-api:
+    build: .
+    container_name: smartcampus-ai
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=smartcampus-production-secret-key-min-32-chars
+      - DATABASE_URL=sqlite:///./smartcampus.db
+    volumes:
+      - ./backend/smartcampus.db:/app/smartcampus.db
+    restart: unless-stopped
