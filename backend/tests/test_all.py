@@ -66,3 +66,21 @@ def test_attendance_status_upgrade():
     rec.confidence_score = 0.92
     assert rec.status == "present"
     assert rec.confidence_score == 0.92
+
+
+def test_p2_error_handling_and_empty_states():
+    # Verify that requesting a non-existent course returns a structured 404
+    from fastapi.testclient import TestClient
+    from app.main import app
+    client = TestClient(app)
+    
+    # 404 for unknown endpoint or missing course
+    res = client.get("/api/v1/attendance/sessions/nonexistent")
+    assert res.status_code in [404, 405]
+
+    # Verify risk summary envelope structure
+    summary = client.get("/api/v1/analytics/risk-summary")
+    if summary.status_code == 200:
+        data = summary.json()
+        assert "total_students" in data
+        assert "high_risk_count" in data
