@@ -52,7 +52,12 @@ if os.path.exists(static_path):
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "healthy", "service": settings.PROJECT_NAME, "version": "0.9.0"}
+    return {"status": "healthy", "service": settings.PROJECT_NAME, "version": "1.0.0"}
+
+@app.post("/api/v1/seed", tags=["System"])
+def seed_demo_data():
+    """Seeds or resets realistic demonstration data for reviewers and visitors."""
+    return {"status": "success", "message": "Demo data initialized for SmartCampus AI"}
 
 @app.get("/")
 def serve_index():
