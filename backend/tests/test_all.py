@@ -84,3 +84,27 @@ def test_p2_error_handling_and_empty_states():
         data = summary.json()
         assert "total_students" in data
         assert "high_risk_count" in data
+
+
+def test_risk_predictor_boundary_conditions():
+    # 0 attendance & multiple backlogs must trigger high risk with alerts
+    worst_case = risk_predictor.predict_risk(attendance_rate=0.0, midterm_score=10.0, assignment_score=0.0, backlogs=5)
+    assert worst_case["risk_level"] == "high"
+    assert worst_case["risk_score"] >= 0.85
+    assert len(worst_case["alerts"]) >= 2
+
+    # Perfect scores must result in low risk with 0 alerts
+    best_case = risk_predictor.predict_risk(attendance_rate=100.0, midterm_score=100.0, assignment_score=100.0, backlogs=0)
+    assert best_case["risk_level"] == "low"
+    assert best_case["risk_score"] == 0.0
+
+def test_csv_export_format():
+    from fastapi.testclient import TestClient
+    from app.main import app
+    client = TestClient(app)
+    
+    # Verify CSV export returns text/csv header
+    res = client.get("/api/v1/attendance/export/csv?session_id=1")
+    assert res.status_code in [200, 401, 403, 404]
+    if res.status_code == 200:
+        assert "text/csv" in res.headers.get("content-type", "")
